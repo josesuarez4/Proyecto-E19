@@ -4,14 +4,12 @@ const { Schema, model, Types } = mongoose;
 const EventoPersonalSchema = new Schema({
   title: { type: String, required: true, trim: true, maxlength: 200 },
   description: { type: String, trim: true },
-  owner: { type: Types.ObjectId, ref: "User", required: true }, // quien crea
+  owner: { type: String, required: true }, 
   participants: [{ type: Types.ObjectId, ref: "User" }],        // invitados
   start: { type: Date, required: true },
   end: { type: Date, required: true },
   allDay: { type: Boolean, default: false },
   location: { type: String },
-  recurrence: { type: RecurrenceSchema, default: null },
-  reminders: { type: [ReminderSchema], default: [] },
   visibility: { type: String, enum: ["private","shared","public"], default: "private" },
   status: { type: String, enum: ["confirmed","tentative","cancelled"], default: "confirmed" },
   tags: [{ type: String }],
