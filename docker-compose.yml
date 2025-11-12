@@ -7,5 +7,14 @@ services:
       - "4000:4000"           # Puerto host:puerto contenedor
     volumes:
       - ./server:/app         # Permite hot-reload con nodemon
-      - ./app:/app_static
+      # - ./app:/app_static
     command: npm run dev       # Script que quieres ejecutar
+  frontend:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - app
+    restart: unless-stopped
