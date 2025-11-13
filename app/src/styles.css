@@ -1,4 +1,4 @@
-body {
+/* body {
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
   margin: 0;
   color: #111827;
@@ -17,4 +17,108 @@ button {
   color: white;
   border: none;
   border-radius: 6px;
+} */
+ /* Contenedor principal (pantalla completa centrada) */
+.login-container {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  justify-content: center;   /* Centra horizontalmente */
+  align-items: center;       /* Centra verticalmente:contentReference[oaicite:3]{index=3} */
+  margin: 0;
 }
+
+/* Mitades izquierda y derecha */
+.login-right {
+  flex: 1;                   /* Cada una ocupa 50% del ancho */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-left {
+  flex: 1;                   /* Cada una ocupa 50% del ancho */
+  display: flex;
+  justify-content: flex-start; /* Mueve el contenido hacia la izquierda */
+  align-items: center;
+  background-color: #f0f4f8; /* Color de fondo suave para la mitad izquierda */
+  padding-left: clamp(16px, 5vw, 48px); /* Ajusta el espacio desde el borde izquierdo */
+}
+
+/* Estilo de la imagen en la mitad derecha */
+.login-right img {
+  width: 150%;
+  height: 200%;
+  object-fit: cover;
+}
+
+/* Formulario centrado con ancho limitado */
+.login-form {
+  width: 80%;
+  max-width: 400px;
+}
+
+/* Campos de entrada estilizados */
+.login-input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;          /* Borde suave */
+  border-radius: 4px;              /* Esquinas redondeadas */
+  background: #F8F8FB;
+  font-size: 16px;
+  outline: none;
+  box-sizing: border-box;
+}
+/* (Como referencia, se pueden usar border:1px solid #DADAF2 y border-radius:5px:contentReference[oaicite:4]{index=4}) */
+
+/* Botón de envío azul estilizado */
+.login-button {
+  width: 100%;
+  padding: 10px;
+  background-color: #0ea5e9;       /* Azul moderno (ejemplo: #0ea5e9 o similar) */
+  color: white;
+  border: none;
+  border-radius: 4px;              /* Esquinas redondeadas */
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+.login-button:hover {
+  background-color: #0b8ac0;
+}
+/* (Por ejemplo, en [24†L323-L330] usan background: #626CD6; color: #fff; border-radius:5px para un botón azul) */
+
+/* Estilos de error opcional */
+.error {
+  color: red;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+/* Título por encima de la caja de login, alineado con la columna izquierda */
+.login-title {
+  color: violet;
+  padding: 1rem 0 0;
+  margin: 0 0 0 clamp(16px, 5vw, 48px);
+  font-size: 2rem;
+}
+
+.hero-logout {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(220,38,38,0.95);
+  color: white;
+  border: none;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.top-right {
+  position: fixed;     /* Se mantiene visible al hacer scroll */
+  top: 10px;           /* Separación desde la parte superior */
+  right: 10px;         /* Separación desde el borde derecho */
+}
+
