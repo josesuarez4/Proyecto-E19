@@ -73,6 +73,14 @@ En desarrollo (añadir progreso)
   ```
 Incluye instrucciones específicas para pruebas unitarias/integración.
 
+## Uso con docker
+
+Para desarrollo ejecutar: 
+```
+docker compose build app frontend 
+docker compose up app frontend
+```
+
 ## Contribuir
 1. Fork del repositorio.
 2. Crea una rama feature/bugfix: `git checkout -b feature/nombre`
