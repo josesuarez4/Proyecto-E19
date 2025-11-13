@@ -3,7 +3,7 @@ import User from "../models/User.js";
 
 const router = express.Router();
 
-// Crear usuario
+// Registrar usuario
 router.post("/", async (req, res) => {
   try {
     const data = req.body;
