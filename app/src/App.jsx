@@ -41,7 +41,16 @@ function App() {
   }
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-500 via-pink-500 to-red-500 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-2xl shadow-2xl">
+          <div className="flex items-center space-x-3">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+            <span className="text-xl font-bold text-gray-800">Cargando...</span>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
