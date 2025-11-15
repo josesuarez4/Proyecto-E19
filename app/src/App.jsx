@@ -5,7 +5,6 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import axios from 'axios';
-import { ImageProvider } from './components/ImageContext';
 
 axios.defaults.withCredentials = true;
 
@@ -54,16 +53,14 @@ function App() {
   }
 
   return (
-    <ImageProvider> {/* ✅ ahora envuelve toda la app */}
-      <Router>
-        <Routes>
-          <Route path="/" element={<><Navbar user={user} setUser={setUser} /><Home setUser={setUser} /></>} />
-          <Route path="/login" element={<Login setUser={setUser} />} />
-          <Route path="/register" element={<Register setUser={setUser} />} />
-        </Routes>
-      </Router>
-    </ImageProvider>
+    <Router>
+      <Routes>
+        <Route path="/" element={<><Navbar user={user} setUser={setUser} /><Home setUser={setUser} /></>} />
+        <Route path="/login" element={<Login setUser={setUser} />} />
+        <Route path="/register" element={<Register setUser={setUser} />} />
+      </Routes>
+    </Router>
   );
 }
 
-export default App; 
+export default App;
