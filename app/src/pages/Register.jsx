@@ -49,9 +49,8 @@ const Register = ({ setUser }) => {
     try {
       const res = await axios.post("http://localhost:4000/api/auth/register", form);
       setUser(res.data);
-      navigate("/login");
       // enviar un estado al Login para que muestre el cartel de registro correcto
-      navigate("/login");
+      navigate("/login", { state: { registered: true } });
     } catch (err) {
       setError(err.response?.data?.message || "Ha habido un error en el registro");
     } finally {

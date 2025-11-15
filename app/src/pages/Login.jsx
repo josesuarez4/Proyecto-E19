@@ -1,14 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect  } from 'react';
 import axios from 'axios';
-import { useNavigate} from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import loginImage from '../images/fondo.png';
 
 const Login = ({ setUser }) => {
+    const navigate = useNavigate();
+  const location = useLocation();
+  const registered = location.state?.registered;
+  useEffect(() => {
+  if (registered) {
+    setShowRegistered(true); // mostramos el toast
+    // limpiamos el state para que no aparezca en un futuro reload
+    navigate(location.pathname, { replace: true, state: {} });
+    
+    // opcional: ocultar toast después de 3 segundos
+    const timer = setTimeout(() => setShowRegistered(false), 3000);
+    return () => clearTimeout(timer);
+  }
+}, [registered, navigate, location.pathname]);
+  const [showRegistered, setShowRegistered] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({ email: "", password: "" });
-  const navigate = useNavigate();
 
   const validateForm = () => {
     const errors = { email: "", password: "" };
@@ -69,17 +83,29 @@ const Login = ({ setUser }) => {
       <div className="w-full flex flex-col lg:flex-row relative z-10">
           
           {/* Formulario - Lado Izquierdo */}
-          <div className="w-full lg:w-2/5 p-8 lg:p-12 bg-white/95 backdrop-blur-sm lg:rounded-r-3xl shadow-2xl">
-            <div className="mb-8">
-              <h1 className="text-3xl font-extrabold text-black-900 bg-clip-text mb-3">
-                Iniciar Sesión
-              </h1>
-              <p className="text-gray-400 text-lg">Iniciar sesión con credencial ULL</p>
-            </div>
+                <div className="w-full lg:w-2/5 p-8 lg:p-12 bg-white/95 backdrop-blur-sm lg:rounded-r-3xl shadow-2xl">
+                <div className="mb-8">
+                  <h1 className="text-3xl font-extrabold text-black-900 bg-clip-text mb-3">
+                  Iniciar Sesión
+                  </h1>
+                  <p className="text-gray-400 text-lg">Iniciar sesión con credencial ULL</p>
+                </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6 relative">
-              
-              {/* Error Message - Fixed position toast */}
+                <form onSubmit={handleSubmit} className="space-y-6 relative">
+                  {showRegistered  && (
+                  <div className="absolute -top-15 left-0 right-0 z-50 animate-slideDown">
+                    <div className="bg-green-500 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3">
+                    <svg className="h-5 w-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.293 10.293a1 1 0 011.414 0L10 10.586l2.293-2.293a1 1 0 111.414 1.414L10 13.414l-3.707-3.707a1 1 0 011.414-1.414z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-sm font-medium flex-1">
+                      ¡Registro completado con éxito!
+                    </span>
+                    </div>
+                  </div>
+                  )}
+
+                  {/* Error Message - Fixed position toast */}
               {error && (
                 <div className="absolute -top-20 left-0 right-0 z-50 animate-slideDown">
                   <div className="bg-red-500 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3">
