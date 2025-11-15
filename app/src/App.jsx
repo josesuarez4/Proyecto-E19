@@ -1,11 +1,11 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import axios from 'axios';
-import { useEffect } from 'react';
+import { ImageProvider } from './components/ImageContext';
 
 axios.defaults.withCredentials = true;
 
@@ -54,13 +54,15 @@ function App() {
   }
 
   return (
-    <Router>
-        <Routes> 
-          <Route path="/" element={<><Navbar user={user} setUser={setUser}/><Home setUser={setUser} /></>} />
+    <ImageProvider> {/* ✅ ahora envuelve toda la app */}
+      <Router>
+        <Routes>
+          <Route path="/" element={<><Navbar user={user} setUser={setUser} /><Home setUser={setUser} /></>} />
           <Route path="/login" element={<Login setUser={setUser} />} />
-          <Route path="/register" element={<Register setUser={setUser}/>} />
+          <Route path="/register" element={<Register setUser={setUser} />} />
         </Routes>
-    </Router>
+      </Router>
+    </ImageProvider>
   );
 }
 

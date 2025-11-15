@@ -1,6 +1,7 @@
 import React, { useState, useEffect  } from 'react';
 import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useImage } from '../components/ImageContext';
 
 const Login = ({ setUser }) => {
     const navigate = useNavigate();
@@ -24,14 +25,7 @@ const Login = ({ setUser }) => {
   const [fieldErrors, setFieldErrors] = useState({ email: "", password: "" });
 
   // Cargar todas las imágenes automáticamente
-  const images = import.meta.glob('../images/*.{png,jpg,jpeg}', { eager: true, import: 'default' });
-  const [loginImage, setLoginImage] = useState('');
-
-  useEffect(() => {
-    const imageArray = Object.values(images);
-    const randomIndex = Math.floor(Math.random() * imageArray.length);
-    setLoginImage(imageArray[randomIndex]); // ✅ Esto sí actualizará la UI
-  }, []);
+  const { image } = useImage();
 
   const validateForm = () => {
     const errors = { email: "", password: "" };
@@ -83,7 +77,7 @@ const Login = ({ setUser }) => {
       {/* Imagen de fondo que cubre toda la pantalla */}
       <div className="absolute inset-0 w-full h-full">
         <img 
-          src={loginImage} 
+          src={image} 
           alt="ETSI Informática ULL" 
           className="w-full h-full object-cover"
         />
