@@ -29,17 +29,22 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ error: "Faltan campos obligatorios (name, email, password)" });
     }
 
-    const existe = await User.findOne({ email: data.email });
+    const email = data.email.trim().toLowerCase();
+
+    const existe = await User.findOne({ email });
     if (existe) {
       return res.status(409).json({ error: "El email ya está registrado" });
     }
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
-    const user = new User({ ...data, password: hashedPassword });
+    // asignar rol según prefijo del email
+    const role = email.startsWith("alu") ? "alumno" : "profesor";
+
+    const user = new User({ ...data, email, password: hashedPassword, rol: role });
     await user.save();
+
     const token = generateToken(user);
-    res.status(201).json({ user, token });
     res.cookie('token', token, cookieOptions);
     res.status(201).json({ user, token });
   } catch (err) {
