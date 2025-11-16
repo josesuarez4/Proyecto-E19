@@ -155,7 +155,7 @@ router.get("/:recursoId/reservas/:reservaId", async (req, res) => {
     
     if (!reserva) return res.status(404).json({ error: "not_found" });
     if (reserva.recurso._id.toString() !== req.params.recursoId) {
-      return res.status(400).json({ error: "reservation_mismatch" });
+      return res.status(400).json({ error: "reservation_id_incorrect" });
     }
     
     res.json(reserva);
@@ -171,7 +171,7 @@ router.delete("/:recursoId/reservas/:reservaId", async (req, res) => {
     if (!reserva) return res.status(404).json({ error: "not_found" });
     
     if (reserva.recurso.toString() !== req.params.recursoId) {
-      return res.status(400).json({ error: "reservation_mismatch" });
+      return res.status(400).json({ error: "reservation_id_incorrect" });
     }
 
     await ReservaRecurso.findByIdAndDelete(req.params.reservaId);

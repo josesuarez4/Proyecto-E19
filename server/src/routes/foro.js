@@ -71,17 +71,17 @@ router.delete("/:id", async (req, res) => {
 		if (!foro) return res.status(404).json({ error: "not_found" });
 
 		// Import models dynamically to avoid changing top imports
-		const { default: Hilo } = await import("../models/Hilo.js");
-		const { default: Post } = await import("../models/Post.js");
+		const { default: Threads } = await import("../models/Threads.js");
+		const { default: Posts } = await import("../models/Posts.js");
 
 		// Obtener hilos del foro y sus ids
-		const hilos = await Hilo.find({ foro: foroId }).select("_id");
+		const hilos = await Threads.find({ foro: foroId }).select("_id");
 		const hiloIds = hilos.map(h => h._id);
 
 		// Borrar posts de esos hilos
 		if (hiloIds.length) {
-			await Post.deleteMany({ hilo: { $in: hiloIds } });
-			await Hilo.deleteMany({ _id: { $in: hiloIds } });
+			await Posts.deleteMany({ thread: { $in: hiloIds } });
+			await Threads.deleteMany({ _id: { $in: hiloIds } });
 		}
 
 		// Borrar el foro

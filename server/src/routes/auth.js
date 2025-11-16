@@ -46,7 +46,20 @@ router.post("/register", async (req, res) => {
 
     const token = generateToken(user);
     res.cookie('token', token, cookieOptions);
-    res.status(201).json({ user, token });
+    
+    const userResponse = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      rol: user.rol,
+      telefono: user.telefono,
+      avatarUrl: user.avatarUrl,
+      activo: user.activo,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt
+    };
+    
+    res.status(201).json({ user: userResponse, token });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "server_error", details: err.message });
@@ -56,7 +69,8 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
+    const emailLower = email.toLowerCase().trim();
+    const user = await User.findOne({ email: emailLower });
     if (!user) {
       return res.status(401).json({ error: "Credenciales inválidas" });
     }
@@ -68,7 +82,19 @@ router.post("/login", async (req, res) => {
 
     res.cookie('token', token, cookieOptions);
 
-    res.json({ user, token });
+    const userResponse = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      rol: user.rol,
+      telefono: user.telefono,
+      avatarUrl: user.avatarUrl,
+      activo: user.activo,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt
+    };
+
+    res.json({ user: userResponse, token });
   }
   catch (err) {
     console.error(err);
