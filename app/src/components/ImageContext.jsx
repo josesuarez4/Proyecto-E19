@@ -1,10 +1,15 @@
 import { createContext, useContext, useState } from 'react';
+import escuelaSuperior from '../images/Facultad-Bellas-Artes.jpg';
 
 const ImageContext = createContext();
 
 export const useImage = () => useContext(ImageContext);
 
 export const ImageProvider = ({ children }) => {
+  // Temporalmente usar una imagen fija para probar
+  const [image, setImage] = useState(escuelaSuperior);
+
+  /* CÓDIGO ORIGINAL COMENTADO - para restaurar la funcionalidad aleatoria
   const KEY = 'bgImage';
 
   // Inicializar de forma síncrona: lee sessionStorage o elige y guarda una imagen inmediatamente
@@ -19,7 +24,7 @@ export const ImageProvider = ({ children }) => {
       if (!imageArray.length) return null;
 
       const chosen = imageArray[Math.floor(Math.random() * imageArray.length)];
-      try { sessionStorage.setItem(KEY, chosen); } catch (e) { /* ignore */ }
+      try { sessionStorage.setItem(KEY, chosen); } catch (e) { // ignore }
       return chosen;
     } catch (err) {
       console.error("ImageProvider init error:", err);
@@ -28,6 +33,7 @@ export const ImageProvider = ({ children }) => {
   })();
 
   const [image, setImage] = useState(initialImage);
+  */
 
   return (
     <ImageContext.Provider value={{ image }}>

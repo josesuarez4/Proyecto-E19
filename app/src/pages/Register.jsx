@@ -133,7 +133,7 @@
                     className={`w-full pl-10 pr-4 py-2.5 border rounded-xl focus:ring-2 transition-all outline-none text-gray-900 ${
                       fieldErrors.name
                         ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
-                        : 'border-gray-300 focus:ring-[#5C068C] focus:border-[#5C068C]'
+                        : 'border-gray-300 focus:ring-[#7024BB] focus:border-[#7024BB]'
                     }`}
                     value={form.name}
                     onChange={(e) => {
@@ -162,7 +162,7 @@
                     className={`w-full pl-10 pr-4 py-2.5 border rounded-xl focus:ring-2 transition-all outline-none text-gray-900 ${
                       fieldErrors.email
                         ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
-                        : 'border-gray-300 focus:ring-[#5C068C] focus:border-[#5C068C]'
+                        : 'border-gray-300 focus:ring-[#7024BB] focus:border-[#7024BB]'
                     }`}
                     value={form.email}
                     onChange={(e) => {
@@ -199,7 +199,7 @@
                     className={`w-full pl-10 pr-4 py-2.5 border rounded-xl focus:ring-2 transition-all outline-none text-gray-900 ${
                       fieldErrors.password
                         ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
-                        : 'border-gray-300 focus:ring-[#5C068C] focus:border-[#5C068C]'
+                        : 'border-gray-300 focus:ring-[#7024BB] focus:border-[#7024BB]'
                     }`}
                     value={form.password}
                     onChange={(e) => {
@@ -222,7 +222,7 @@
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#5C068C] text-white py-3 px-4 rounded-xl font-bold text-md hover:bg-[#4A0570] focus:outline-none focus:ring-4 focus:ring-[#5C068C]/30 transform transition-all duration-150 hover:scale-[1.02] hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                className="w-full bg-gradient-to-r from-[#7024BB] to-[#8e44e5] text-white py-3 px-4 rounded-xl font-bold text-md hover:from-[#5f1da0] hover:to-[#7c3ad4] focus:outline-none focus:ring-4 focus:ring-[#7024BB]/30 transform transition-all duration-150 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed mt-6"
               >
                 {loading ? (
                   <span className="flex items-center justify-center">
@@ -240,7 +240,7 @@
               {/* Links */}
               <div className="flex items-center justify-between text-sm mt-4">
             
-                <a href="/login" className="text-[#5C068C] hover:text-[#4A0570] font-medium hover:underline">
+                <a href="/login" className="text-[#7024BB] hover:text-[#5f1da0] font-medium hover:underline">
                   ¿Ya tienes cuenta? Iniciar sesión
                 </a>
               </div>

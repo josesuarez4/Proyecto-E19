@@ -110,7 +110,7 @@ const Login = ({ setUser }) => {
 
                   {/* Error Message - Fixed position toast */}
               {error && (
-                <div className="absolute -top-20 left-0 right-0 z-50 animate-slideDown">
+                <div className="absolute -top-15 left-0 right-0 z-50 animate-slideDown">
                   <div className="bg-red-500 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3">
                     <svg className="h-5 w-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
@@ -147,7 +147,7 @@ const Login = ({ setUser }) => {
                     className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 transition-all outline-none text-gray-900 ${
                       fieldErrors.email 
                         ? 'border-red-500 focus:ring-red-500 focus:border-red-500' 
-                        : 'border-gray-300 focus:ring-[#5C068C] focus:border-[#5C068C]'
+                        : 'border-gray-300 focus:ring-[#7024BB] focus:border-[#7024BB]'
                     }`}
                     value={form.email}
                     onChange={(e) => {
@@ -184,7 +184,7 @@ const Login = ({ setUser }) => {
                     className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 transition-all outline-none text-gray-900 ${
                       fieldErrors.password 
                         ? 'border-red-500 focus:ring-red-500 focus:border-red-500' 
-                        : 'border-gray-300 focus:ring-[#5C068C] focus:border-[#5C068C]'
+                        : 'border-gray-300 focus:ring-[#7024BB] focus:border-[#7024BB]'
                     }`}
                     value={form.password}
                     onChange={(e) => {
@@ -207,7 +207,7 @@ const Login = ({ setUser }) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#5C068C] text-white py-3.5 px-4 rounded-xl font-bold text-lg hover:bg-[#4A0570] focus:outline-none focus:ring-4 focus:ring-[#5C068C]/30 transform transition-all duration-200 hover:scale-[1.02] hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
+                className="w-full bg-gradient-to-r from-[#7024BB] to-[#8e44e5] text-white py-3.5 px-4 rounded-xl font-bold text-lg hover:from-[#5f1da0] hover:to-[#7c3ad4] focus:outline-none focus:ring-4 focus:ring-[#7024BB]/30 transform transition-all duration-200 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
                 {loading ? (
                   <span className="flex items-center justify-center">
@@ -224,10 +224,10 @@ const Login = ({ setUser }) => {
 
               {/* Links */}
               <div className="flex items-center justify-between text-sm mt-6">
-                <a href="#" className="text-[#5C068C] hover:text-[#4A0570] font-medium hover:underline">
+                <a href="#" className="text-[#7024BB] hover:text-[#5f1da0] font-medium hover:underline">
                   ¿Olvidaste tu contraseña?
                 </a>
-                <a href="/register" className="text-[#5C068C] hover:text-[#4A0570] font-medium hover:underline">
+                <a href="/register" className="text-[#7024BB] hover:text-[#5f1da0] font-medium hover:underline">
                   Crear cuenta
                 </a>
               </div>
