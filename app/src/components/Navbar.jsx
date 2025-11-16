@@ -179,10 +179,10 @@ const Navbar = ({user, setUser}) => {
   
   
   return (
-    <nav className="bg-white py-4 md:py-5 px-6 md:px-16 lg:px-24 text-gray-800 flex items-center justify-between shadow-md"> 
+    <nav className="bg-white py-4 md:py-5 px-8 md:px-20 lg:px-32 text-gray-800 flex items-center justify-between shadow-md"> 
       <div className="flex items-center nav-brand">
-        <Link to="/" className="flex items-center gap-2 md:gap-3 text-lg md:text-xl font-bold text-gray-800 hover:text-[#5C068C] transition-colors">
-          <span className="w-8 h-8 md:w-10 md:h-10 bg-[#5C068C] rounded-full flex items-center justify-center text-white text-lg md:text-xl font-extrabold">U</span>
+        <Link to="/" className="flex items-center gap-2 md:gap-3 text-lg md:text-xl font-bold text-gray-800 hover:text-[#7024BB] transition-colors">
+          <span className="w-8 h-8 md:w-10 md:h-10 bg-[#7024BB] rounded-full flex items-center justify-center text-white text-lg md:text-xl font-extrabold">U</span>
           <span className="hidden sm:inline">ULL CALENDAR</span>
         </Link>
       </div>
@@ -207,7 +207,7 @@ const Navbar = ({user, setUser}) => {
                     setActiveCourse(null);
                   }, 300);
                 }}
-                className="text-sm xl:text-base font-semibold text-gray-800 hover:text-[#5C068C] transition-colors py-2 px-2"
+                className="text-sm xl:text-base font-semibold text-gray-800 hover:text-[#7024BB] transition-colors py-2 px-2"
               >
                 {section.title}
               </button>
@@ -248,8 +248,8 @@ const Navbar = ({user, setUser}) => {
                           style={{
                             backgroundColor: activeCourse === courseIdx ? '#f3f4f6' : 'white',
                             fontWeight: activeCourse === courseIdx ? '600' : '500',
-                            color: activeCourse === courseIdx ? '#5C068C' : '#374151',
-                            borderLeft: activeCourse === courseIdx ? '3px solid #5C068C' : '3px solid transparent',
+                            color: activeCourse === courseIdx ? '#7024BB' : '#374151',
+                            borderLeft: activeCourse === courseIdx ? '3px solid #7024BB' : '3px solid transparent',
                             fontSize: '0.95rem'
                           }}
                         >
@@ -276,7 +276,7 @@ const Navbar = ({user, setUser}) => {
                                 borderTop: isSectionTitle && subIdx > 0 ? '1px solid #e5e7eb' : 'none',
                                 cursor: isSectionTitle ? 'default' : 'pointer'
                               }}
-                              onMouseEnter={(e) => !isSectionTitle && (e.currentTarget.style.color = '#5C068C')}
+                              onMouseEnter={(e) => !isSectionTitle && (e.currentTarget.style.color = '#7024BB')}
                               onMouseLeave={(e) => !isSectionTitle && (e.currentTarget.style.color = '#6b7280')}
                             >
                               {subitem}
@@ -301,7 +301,7 @@ const Navbar = ({user, setUser}) => {
                               fontSize: '0.875rem',
                               lineHeight: '1.4'
                             }}
-                            onMouseEnter={(e) => e.currentTarget.style.color = '#5C068C'}
+                            onMouseEnter={(e) => e.currentTarget.style.color = '#7024BB'}
                             onMouseLeave={(e) => e.currentTarget.style.color = '#4b5563'}
                           >
                             {subitem}
@@ -327,7 +327,7 @@ const Navbar = ({user, setUser}) => {
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="w-9 h-9 md:w-10 md:h-10 xl:w-11 xl:h-11 bg-[#5C068C] rounded-full flex items-center justify-center text-white font-semibold text-lg xl:text-xl hover:bg-[#4A0570] transition-colors"
+              className="w-9 h-9 md:w-10 md:h-10 xl:w-11 xl:h-11 bg-[#7024BB] rounded-full flex items-center justify-center text-white font-semibold text-lg xl:text-xl hover:bg-[#5f1da0] transition-colors"
             >
               {getInitial(user)}
             </button>            {dropdownOpen && (
@@ -339,7 +339,7 @@ const Navbar = ({user, setUser}) => {
                 
                 <Link 
                   to="/perfil" 
-                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#5C068C] transition-colors"
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#7024BB] transition-colors"
                   onClick={() => setDropdownOpen(false)}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -366,14 +366,14 @@ const Navbar = ({user, setUser}) => {
           <div className="flex items-center gap-2 md:gap-3">
             <Link 
               to="/login" 
-              className="px-3 md:px-5 py-2 md:py-2.5 text-sm md:text-base font-medium text-gray-700 hover:text-[#5C068C] transition-colors rounded-lg hover:bg-gray-100"
+              className="px-3 md:px-5 py-2 md:py-2.5 text-sm md:text-base font-medium text-gray-700 hover:text-[#7024BB] transition-colors rounded-2xl hover:bg-gray-100"
             >
               <span className="hidden sm:inline">Iniciar sesión</span>
               <span className="sm:hidden">Entrar</span>
             </Link>
             <Link 
               to="/register" 
-              className="px-4 md:px-6 py-2 md:py-2.5 text-sm md:text-base font-semibold bg-[#5C068C] text-white rounded-lg hover:bg-[#4A0570] active:bg-[#3A0460] transition-all hover:scale-105 active:scale-95"
+              className="px-4 md:px-6 py-2 md:py-2.5 text-sm md:text-base font-semibold bg-gradient-to-r from-[#7024BB] to-[#8e44e5] text-white rounded-2xl hover:from-[#5f1da0] hover:to-[#7c3ad4] active:from-[#4e1685] active:to-[#6a30c0] transition-all hover:scale-105 active:scale-95"
             >
               <span className="hidden sm:inline">Registrarse</span>
               <span className="sm:hidden">Registro</span>
