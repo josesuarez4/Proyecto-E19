@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import DashboardNavbar from './components/DashboardNavbar';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import { NavigationProvider } from './contexts/NavigationContext';
 import axios from 'axios';
 
 axios.defaults.withCredentials = true;
@@ -59,7 +61,12 @@ function App() {
         <Route path="/" element={<><Navbar user={user} setUser={setUser} /><Home setUser={setUser} /></>} />
         <Route path="/login" element={<Login setUser={setUser} />} />
         <Route path="/register" element={<Register setUser={setUser} />} />
-        <Route path="/dashboard" element={<><Navbar user={user} setUser={setUser} /><Dashboard user={user} /></>} />
+        <Route path="/dashboard" element={
+          <NavigationProvider>
+            <DashboardNavbar user={user} setUser={setUser} />
+            <Dashboard user={user} />
+          </NavigationProvider>
+        } />
       </Routes>
     </Router>
   );

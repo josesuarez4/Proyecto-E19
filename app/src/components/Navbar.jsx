@@ -33,8 +33,16 @@ const Navbar = ({user, setUser}) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Menú de navegación
-  const menuSections = [
+  // Menú de navegación para usuarios logueados
+  const loggedInMenuSections = [
+    { title: 'Tutorías', hasItems: false },
+    { title: 'Dashboard', hasItems: false },
+    { title: 'Reserva de espacios', hasItems: false },
+    { title: 'Calendario', hasItems: false }
+  ];
+
+  // Menú de navegación público (Home)
+  const publicMenuSections = [
     { 
       title: 'Asignaturas', 
       hasItems: true,
@@ -164,9 +172,12 @@ const Navbar = ({user, setUser}) => {
         }
       ]
     },
-    { title: 'Ubicación', hasItems: false },
+    { title: 'Preguntas Frecuentes', hasItems: false },
     { title: 'Sobre nosotros', hasItems: false }
   ];
+
+  // Seleccionar el menú apropiado según si el usuario está logueado
+  const menuSections = user ? loggedInMenuSections : publicMenuSections;
 
   // Obtener inicial del nombre o email
   const getInitial = (user) => {
