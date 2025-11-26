@@ -104,7 +104,7 @@ router.post("/login", async (req, res) => {
 
 // me - obtener datos del usuario autenticado
 router.get("/me", protect, (req, res) => {
-  res.json({ user: req.user });
+  res.json(req.user);
 });
 
 // logout - eliminar la cookie de autenticación

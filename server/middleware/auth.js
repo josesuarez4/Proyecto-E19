@@ -13,13 +13,21 @@ export const protect = async (req, res, next) => {
     const userId = decoded.id;
 
     // petición a la base de datos (MongoDB) usando Mongoose
-    const user = await User.findById(userId).select("username email");
+    const user = await User.findById(userId).select("name email rol telefono avatarUrl activo");
 
     if (!user) {
       return res.status(401).json({ message: "Not authorized, user not found" });
     }
 
-    req.user = { id: user._id, username: user.username, email: user.email };
+    req.user = { 
+      _id: user._id, 
+      name: user.name, 
+      email: user.email, 
+      rol: user.rol,
+      telefono: user.telefono,
+      avatarUrl: user.avatarUrl,
+      activo: user.activo
+    };
     next();
     
   } catch (error) {
