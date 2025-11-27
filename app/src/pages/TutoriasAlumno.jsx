@@ -67,7 +67,7 @@ function TutoriasAlumno({ menu, activeSubsection, user }) {
            entries.map(async (p) => {
              if (!p.id || p.id === 'sin-profesor') return { id: p.id, name: 'Profesor desconocido', horarios: p.horarios };
              try {
-               const r = await fetchApi(`/api/users/${encodeURIComponent(p.id)}`);
+               const r = await fetchApi(`/api/usuarios/${encodeURIComponent(p.id)}`);
                if (!r.ok) throw new Error('no user');
                const u = await r.json();
                const name = u.name || u.username || u.fullName || (u.email ? u.email.split('@')[0] : 'Profesor');
@@ -97,8 +97,8 @@ function TutoriasAlumno({ menu, activeSubsection, user }) {
 
   return (
     <div className="bg-white rounded-lg p-4 sm:p-6 lg:p-8 shadow-sm">
-      <div className="flex flex-col items-center justify-center min-h-[300px] sm:min-h-[400px] lg:min-h-[500px]">
-        <div className="text-center w-full">
+      <div className="flex flex-col items-start justify-start min-h-[300px] sm:min-h-[400px] lg:min-h-[500px]">
+        <div className="text-left w-full">
           
 
           {/* Si estamos en la pestaña 'reservar' mostramos los profesores con horarios */}
@@ -110,25 +110,38 @@ function TutoriasAlumno({ menu, activeSubsection, user }) {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {profesores.map((p) => (
-                    <div key={p.id} className="border rounded p-4 flex flex-col justify-between">
-                      <div>
-                        <div className="text-lg font-semibold">{p.name}</div>
-                        <div className="text-xs text-gray-500 mt-1">
-                          {p.horarios.length} {p.horarios.length === 1 ? 'franja' : 'franjas'}
+                    <div
+                      key={p.id}
+                      className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex flex-col justify-between items-start"
+                    >
+                      <div className="flex gap-4 items-start w-full">
+                        <div className="flex-shrink-0">
+                          <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-lg font-semibold text-gray-700">
+                            { (p.name || 'P').split(' ').map(n => n?.[0] || '').slice(0,2).join('').toUpperCase() }
+                          </div>
                         </div>
-                        <ul className="mt-3 text-sm text-gray-600 space-y-1">
-                          {p.horarios.slice(0, 3).map((h) => (
-                            <li key={h._id || `${p.id}-${h.diaSemana}-${h.horaInicio}`}>
-                              {h.asignatura ? `${h.asignatura} · ` : ''}{h.diaSemana} {h.horaInicio} - {h.horaFin} {h.modalidad ? `· ${h.modalidad}` : ''}
-                            </li>
-                          ))}
-                          {p.horarios.length > 3 && <li className="text-xs text-gray-400">...y más</li>}
-                        </ul>
+                        <div className="flex-1">
+                          <div className="text-lg font-semibold text-gray-800">{p.name}</div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {p.horarios.length} {p.horarios.length === 1 ? 'sesion' : 'franjas'}
+                          </div>
+                          <ul className="mt-3 p-0 text-sm text-gray-600 space-y-1 max-h-28 overflow-auto pr-2 text-left">
+                            {p.horarios.slice(0, 6).map((h) => (
+                              <li key={h._id || `${p.id}-${h.diaSemana}-${h.horaInicio}`} className="flex items-center gap-2">
+                                <span>
+                                  {h.asignatura ? `${h.asignatura} · ` : ''}{h.diaSemana} {h.horaInicio} - {h.horaFin}
+                                  {h.modalidad ? <span className="text-xs text-gray-400 ml-2">· {h.modalidad}</span> : null}
+                                </span>
+                              </li>
+                            ))}
+                            {p.horarios.length > 6 && <li className="text-xs text-gray-400">...y más</li>}
+                          </ul>
+                        </div>
                       </div>
-                      <div className="mt-4">
+                      <div className="mt-4 w-full">
                         <button
                           onClick={() => onReservar(p)}
-                          className="w-full px-3 py-2 bg-blue-600 text-white rounded-md"
+                          className="w-full px-3 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-md"
                         >
                           Reservar
                         </button>
