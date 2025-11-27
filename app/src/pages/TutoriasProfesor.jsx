@@ -1,10 +1,9 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Icon from '../components/Icon';
 
-function TutoriasProfesor({ menu, activeSubsection }) {
+function TutoriasProfesor({ menu, activeSubsection, user }) {
   const item = (menu || []).find((m) => m.id === activeSubsection) || {};
   const tab = item.id || activeSubsection || 'default';
-  console.log (menu);
   // contenidos de ejemplo por pestaña (se actualiza historial con 5 datetimes)
   const contenidos = {
     'profesores': [
@@ -53,12 +52,12 @@ function TutoriasProfesor({ menu, activeSubsection }) {
 
   // estado para datos traídos desde la base de datos (historial)
   const [dbHistorial, setDbHistorial] = useState(null);
-  const [historialError, setHistorialError] = useState(null);
+  const [, setHistorialError] = useState(null);
   // estado para modal de detalles de sesión
   const [selectedSession, setSelectedSession] = useState(null);
-  // emails resueltos para mostrar en el modal
-  const [profEmail, setProfEmail] = useState(null);
-  const [studentEmail, setStudentEmail] = useState(null);
+  // emails resueltos para mostrar en el modal (usamos solo el setter para evitar warning si no se leen directamente)
+  const [, setProfEmail] = useState(null);
+  const [, setStudentEmail] = useState(null);
   
   // helper para calcular fin de semana (end)
   const endOfWeek = (start) => {
@@ -80,7 +79,7 @@ function TutoriasProfesor({ menu, activeSubsection }) {
         // enviar rango para optimizar consulta en backend
         const startISO = weekStart.toISOString();
         const endISO = endOfWeek(weekStart).toISOString();
-        const res = await fetch(`/api/tutorias?type=historial&start=${encodeURIComponent(startISO)}&end=${encodeURIComponent(endISO)}`, {
+        const res = await fetchApi(`/api/tutorias?type=historial&start=${encodeURIComponent(startISO)}&end=${encodeURIComponent(endISO)}`, {
           signal: controller.signal,
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -183,7 +182,7 @@ function TutoriasProfesor({ menu, activeSubsection }) {
       const id = typeof idOrObj === 'string' ? idOrObj : (idOrObj._id || idOrObj.id || null);
       if (!id) return null;
       try {
-        const res = await fetch(`/api/users/${encodeURIComponent(id)}`, { signal: controller.signal });
+        const res = await fetchApi(`/api/users/${encodeURIComponent(id)}`, { signal: controller.signal });
         if (!res.ok) return null;
         const data = await res.json();
         return data.email || data.username || data.name || null;
@@ -231,8 +230,24 @@ function TutoriasProfesor({ menu, activeSubsection }) {
 
   const reservasStorageKey = () => 'local_reservas';
 
+  // API base (ajustable via env o localStorage). Por defecto http://localhost:4000 (backend)
+  const API_BASE = (
+    (typeof window !== 'undefined' && (window.__API_BASE__ || window.localStorage.getItem('API_BASE'))) ||
+    (typeof process !== 'undefined' && (process.env && (process.env.REACT_APP_API_BASE || process.env.VITE_API_BASE))) ||
+    'http://localhost:4000'
+  );
+  const fetchApi = (path, opts = {}) => {
+    const p = path.startsWith('/') ? path : `/${path}`;
+    // no 'credentials' by default to avoid CORS preflight cancellations when backend
+    // doesn't accept cookies. Add default JSON header, merged with any opts.headers.
+    const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+    return fetch(`${API_BASE}${p}`, { ...opts, headers });
+  };
+
   // helper para obtener id de usuario actual (ajusta si tu auth difiere)
   const getCurrentUserId = () => {
+    // Preferir user pasado por props (user._id | user.id), fallback a localStorage
+    if (user && (user._id || user.id)) return user._id || user.id;
     if (typeof window === 'undefined') return null;
     return localStorage.getItem('userId') || null;
   };
@@ -250,7 +265,7 @@ function TutoriasProfesor({ menu, activeSubsection }) {
       return;
     }
     try {
-      const res = await fetch(`/api/horarios?profesorId=${encodeURIComponent(uid)}`);
+      const res = await fetchApi(`/api/horarios?profesorId=${encodeURIComponent(uid)}`);
       if (!res.ok) throw new Error('No horarios');
       const data = await res.json();
       // data expected array of horarios
@@ -285,16 +300,14 @@ function TutoriasProfesor({ menu, activeSubsection }) {
     }
     try {
       const payload = { ...horario, profesor: uid };
-      const res = await fetch('/api/horarios', {
+      const res = await fetchApi('/api/horarios', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error('Error creando horario');
-      const created = await res.json();
-      // añadir al estado (el backend debería devolver el documento creado)
-      setLocalReservas((prev) => [created, ...prev]);
-      localStorage.setItem(reservasStorageKey(), JSON.stringify([created, ...localReservas]));
+      // recargar desde servidor para evitar inconsistencias
+      await loadUserSchedules();
     } catch (err) {
       console.error('createHorario error, guardando local', err);
       const id = `local_${Date.now()}`;
@@ -311,12 +324,10 @@ function TutoriasProfesor({ menu, activeSubsection }) {
     if (!confirm('Borrar horario?')) return;
     if (!id.startsWith('local_')) {
       try {
-        const res = await fetch(`/api/horarios/${encodeURIComponent(id)}`, { method: 'DELETE' });
+        const res = await fetchApi(`/api/horarios/${encodeURIComponent(id)}`, { method: 'DELETE' });
         if (!res.ok) throw new Error('Error borrando');
-        // quitar del estado
-        const next = localReservas.filter((r) => r._id !== id && r.id !== id);
-        setLocalReservas(next);
-        localStorage.setItem(reservasStorageKey(), JSON.stringify(next));
+        // recargar desde servidor
+        await loadUserSchedules();
         return;
       } catch (err) {
         console.error('deleteHorario error', err);

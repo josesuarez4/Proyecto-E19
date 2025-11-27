@@ -10,7 +10,7 @@ const router = Router();
    =========================================================== */
 
 // Crear un horario
-router.post("/horarios", async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const { profesor, asignatura, modalidad, lugar, diaSemana, horaInicio, horaFin } = req.body;
 
