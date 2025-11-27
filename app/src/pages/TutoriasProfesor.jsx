@@ -216,6 +216,9 @@ function TutoriasProfesor({ menu, activeSubsection, user }) {
 
   // --- reservas locales para la vista "reservar" ---
   const [localReservas, setLocalReservas] = useState([]);
+  // edición inline
+  const [editingId, setEditingId] = useState(null);
+  const [editValues, setEditValues] = useState({});
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newReserva, setNewReserva] = useState({
     asignatura: '',
@@ -376,6 +379,53 @@ function TutoriasProfesor({ menu, activeSubsection, user }) {
     };
     await createHorario(payload);
     setShowCreateModal(false);
+  };
+
+  // --- helpers para editar horario existente ---
+  const startEdit = (s) => {
+    const id = s._id || s.id;
+    setEditingId(id);
+    setEditValues({
+      horaInicio: s.horaInicio || '',
+      horaFin: s.horaFin || '',
+      modalidad: s.modalidad || s.modality || '',
+      lugar: s.lugar || s.place || '',
+    });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditValues({});
+  };
+
+  const saveEdit = async (id) => {
+    try {
+      const payload = { ...editValues };
+      const res = await fetchApi(`/api/horarios/${encodeURIComponent(id)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const txt = await res.text().catch(() => '');
+        throw new Error(txt || 'Error actualizando');
+      }
+      const updated = await res.json().catch(() => null);
+      // actualizar localReservas para reflejar inmediatamente el cambio
+      setLocalReservas((prev) =>
+        prev.map((r) => {
+          const rid = r._id || r.id;
+          if (rid === id) return { ...r, ...payload, ...(updated || {}) };
+          return r;
+        })
+      );
+      cancelEdit();
+      // recargar desde servidor para consistencia
+      await loadUserSchedules();
+    } catch (err) {
+      console.error('saveEdit error', err);
+      alert('No se pudo guardar: ' + (err.message || ''));
+    }
   };
 
   // Agrupar reservas por asignatura para la vista "reservar"
@@ -635,25 +685,88 @@ function TutoriasProfesor({ menu, activeSubsection, user }) {
                     </div>
 
                     <div className="mt-3 space-y-2">
-                      {g.items.map((s) => (
-                        <div
-                          key={s._id || s.id}
-                          className="flex items-center justify-between bg-gray-200 border border-gray-200 rounded-md p-2 shadow-sm"
-                        >
-                          <div className="text-sm text-gray-800">
-                            {s.diaSemana ? `${s.diaSemana} ` : ''}{s.horaInicio}{s.horaFin ? ` - ${s.horaFin}` : ''}
-                            {s.modalidad ? <span className="text-xs text-gray-500 ml-2">· {s.modalidad}</span> : null}
+                      {g.items.map((s) => {
+                        const id = s._id || s.id;
+                        const isEditing = editingId === id;
+                        return (
+                          <div
+                            key={id}
+                            className="flex items-center justify-between bg-gray-200 border border-gray-200 rounded-md p-2 shadow-sm"
+                          >
+                            {isEditing ? (
+                              <div className="flex-1 flex items-center gap-2">
+                                <input
+                                  className="p-1 border rounded w-24"
+                                  value={editValues.horaInicio || ''}
+                                  onChange={(e) => setEditValues((v) => ({ ...v, horaInicio: e.target.value }))}
+                                  placeholder="HH:MM"
+                                />
+                                <span className="text-sm text-gray-600">-</span>
+                                <input
+                                  className="p-1 border rounded w-24"
+                                  value={editValues.horaFin || ''}
+                                  onChange={(e) => setEditValues((v) => ({ ...v, horaFin: e.target.value }))}
+                                  placeholder="HH:MM"
+                                />
+                                <select
+                                  className="p-1 border rounded"
+                                  value={editValues.modalidad || ''}
+                                  onChange={(e) => setEditValues((v) => ({ ...v, modalidad: e.target.value }))}
+                                >
+                                  <option value="">Modalidad</option>
+                                  <option value="presencial">presencial</option>
+                                  <option value="online">online</option>
+                                </select>
+                                <input
+                                  className="p-1 border rounded flex-1"
+                                  value={editValues.lugar || ''}
+                                  onChange={(e) => setEditValues((v) => ({ ...v, lugar: e.target.value }))}
+                                  placeholder="Lugar"
+                                />
+                              </div>
+                            ) : (
+                              <div className="text-sm text-gray-800">
+                                {s.diaSemana ? `${s.diaSemana} ` : ''}{s.horaInicio}{s.horaFin ? ` - ${s.horaFin}` : ''}
+                                {s.modalidad ? <span className="text-xs text-gray-500 ml-2">· {s.modalidad}</span> : null}
+                              </div>
+                            )}
+
+                            <div className="flex items-center gap-2">
+                              {isEditing ? (
+                                <>
+                                  <button
+                                    onClick={() => saveEdit(id)}
+                                    className="text-xs px-2 py-1 bg-violet-600 text-white rounded"
+                                  >
+                                    Guardar
+                                  </button>
+                                  <button
+                                    onClick={cancelEdit}
+                                    className="text-xs px-2 py-1 bg-gray-300 text-gray-800 rounded"
+                                  >
+                                    Cancelar
+                                  </button>
+                                </>
+                              ) : (
+                                <>
+                                  <button
+                                    onClick={() => startEdit(s)}
+                                    className="text-xs px-2 py-1 bg-yellow-400 text-white rounded"
+                                  >
+                                    Editar
+                                  </button>
+                                  <button
+                                    onClick={() => deleteHorario(id)}
+                                    className="text-xs px-2 py-1 bg-red-500 text-white rounded"
+                                  >
+                                    Borrar
+                                  </button>
+                                </>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => deleteHorario(s._id || s.id)}
-                              className="text-xs px-2 py-1 bg-red-500 text-white rounded"
-                            >
-                              Borrar
-                            </button>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 ))

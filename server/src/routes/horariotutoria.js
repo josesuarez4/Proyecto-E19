@@ -191,4 +191,61 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+router.put("/:id", async (req, res) => {
+  try {
+    const { profesor, asignatura, modalidad, lugar, diaSemana, horaInicio, horaFin, activo } = req.body;
+
+    if (
+      !profesor &&
+      !asignatura &&
+      !modalidad &&
+      !lugar &&
+      !diaSemana &&
+      !horaInicio &&
+      !horaFin &&
+      typeof activo === "undefined"
+    ) {
+      return res.status(400).json({ error: "No hay campos para actualizar." });
+    }
+
+    if (profesor) {
+      const esProfesor = await User.findById(profesor);
+      if (!esProfesor || esProfesor.rol !== "profesor") {
+        return res.status(400).json({ error: "El usuario no es profesor." });
+      }
+    }
+
+    if (horaInicio && horaFin) {
+      const start = new Date(`1970-01-01T${horaInicio}`);
+      const end = new Date(`1970-01-01T${horaFin}`);
+      if (isNaN(start) || isNaN(end) || start >= end) {
+        return res.status(400).json({ error: "horaInicio debe ser anterior a horaFin y formatos válidos." });
+      }
+    }
+
+    const update = {};
+    if (profesor) update.profesor = profesor;
+    if (asignatura) update.asignatura = asignatura;
+    if (modalidad) update.modalidad = modalidad;
+    if (lugar) update.lugar = lugar;
+    if (diaSemana) update.diaSemana = diaSemana;
+    if (horaInicio) update.horaInicio = horaInicio;
+    if (horaFin) update.horaFin = horaFin;
+    if (typeof activo !== "undefined") update.activo = activo;
+
+    const horario = await HorarioTutoria.findByIdAndUpdate(req.params.id, update, {
+      new: true,
+      runValidators: true
+    });
+
+    if (!horario) {
+      return res.status(404).json({ error: "Horario no encontrado." });
+    }
+
+    res.json(horario);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;
