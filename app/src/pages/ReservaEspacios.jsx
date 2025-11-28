@@ -119,7 +119,7 @@ function ReservaEspacios({ menu, activeSubsection }) {
   };
 
   return (
-    <div className="bg-white rounded-xl p-6 sm:p-8 lg:p-10">
+    <div className="mt-4">
       {/* Two professional widgets: left = lista de espacios, right = detalle/reservas */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Widget izquierdo: Lista de espacios */}
@@ -295,12 +295,20 @@ function ReservaEspacios({ menu, activeSubsection }) {
                               })}</span>
                             </div>
                           </div>
-                          <span className={`text-xs px-3 py-1.5 rounded-full font-medium ${
+                          <span className={`text-xs px-3 py-1.5 rounded-full font-medium flex items-center gap-1 ${
                             r.estado === 'confirmada' 
                               ? 'bg-green-50 text-green-700 border border-green-200' 
+                              : r.estado === 'cancelada'
+                              ? 'bg-red-50 text-red-700 border border-red-200'
                               : 'bg-gray-50 text-gray-600 border border-gray-200'
                           }`}>
-                            {r.estado === 'confirmada' ? '✓ Confirmada' : r.estado || 'Confirmada'}
+                            {r.estado === 'confirmada' ? (
+                              <>✓ Confirmada</>
+                            ) : r.estado === 'cancelada' ? (
+                              <>✕ Cancelada</>
+                            ) : (
+                              r.estado || 'Confirmada'
+                            )}
                           </span>
                         </div>
                       </li>

@@ -9,10 +9,16 @@ function MisReservas() {
   const [showEditModal, setShowEditModal] = React.useState(false);
   const [reservaToEdit, setReservaToEdit] = React.useState(null);
   const [newTime, setNewTime] = React.useState('');
+  const [filterType, setFilterType] = React.useState('all');
 
   React.useEffect(() => {
     fetchMy();
   }, []);
+
+  const types = React.useMemo(() => {
+    const t = Array.from(new Set(misReservas.map(r => r.recurso?.tipo).filter(Boolean)));
+    return ['all', ...t];
+  }, [misReservas]);
 
   const fetchMy = async () => {
     try {
@@ -119,8 +125,37 @@ function MisReservas() {
     }
   };
 
+  const formatLabel = (tipo) => {
+    if (tipo === 'all') return 'Todas';
+    return tipo.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  };
+
+  const filteredReservas = React.useMemo(() => {
+    if (filterType === 'all') return misReservas;
+    return misReservas.filter(r => r.recurso?.tipo === filterType);
+  }, [misReservas, filterType]);
+
   return (
-    <div className="bg-white rounded-xl p-6 sm:p-8 lg:p-10">
+    <div className="mt-4">
+      {/* Filtros por tipo */}
+      {!loading && misReservas.length > 0 && (
+        <div className="mb-4 flex flex-wrap gap-2">
+          {types.map(t => (
+            <button
+              key={t}
+              onClick={() => setFilterType(t)}
+              className={`text-sm px-4 py-2 rounded-full font-medium transition-all ${
+                filterType === t 
+                  ? 'bg-[#7024BB] text-white' 
+                  : 'bg-white text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              {formatLabel(t)}
+            </button>
+          ))}
+        </div>
+      )}
+
       {message && (
         <div className={`mb-4 p-4 rounded-xl ${message.type === 'error' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'}`}>
           {message.text}
@@ -143,23 +178,29 @@ function MisReservas() {
         </div>
       )}
 
-      {!loading && misReservas.length > 0 && (
+      {!loading && filteredReservas.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {misReservas.map((r) => (
+          {filteredReservas.map((r) => (
             <div key={r._id} className="p-5 rounded-xl bg-gray-50 hover:ring-2 hover:ring-[#7024BB] transition-all">
               <div className="flex justify-between items-start mb-3">
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900 text-lg">{r.recurso?.nombre || 'Recurso'}</h3>
                   <p className="text-sm text-gray-500 mt-1">{r.recurso?.ubicacion || 'Sin ubicación'}</p>
                 </div>
-                <span className={`text-xs px-3 py-1.5 rounded-full font-medium ${
+                <span className={`text-xs px-3 py-1.5 rounded-full font-medium flex items-center gap-1 ${
                   r.estado === 'confirmada' 
                     ? 'bg-green-50 text-green-700 border border-green-200' 
                     : r.estado === 'cancelada'
                     ? 'bg-red-50 text-red-700 border border-red-200'
                     : 'bg-gray-50 text-gray-600 border border-gray-200'
                 }`}>
-                  {r.estado === 'confirmada' ? '✓ Confirmada' : r.estado || 'Confirmada'}
+                  {r.estado === 'confirmada' ? (
+                    <>✓ Confirmada</>
+                  ) : r.estado === 'cancelada' ? (
+                    <>✕ Cancelada</>
+                  ) : (
+                    r.estado || 'Confirmada'
+                  )}
                 </span>
               </div>
 
