@@ -337,8 +337,356 @@ function TutoriasAlumno({ menu, activeSubsection, user }) {
   // fin historial
   // -----------------------
 
+  // -----------------------
+  // Mis Tutorías (confirmadas)
+  // -----------------------
+  const [misTutorias, setMisTutorias] = useState([]);
+  const [loadingMisTutorias, setLoadingMisTutorias] = useState(false);
+
+  useEffect(() => {
+    if (!activeSubsection || String(activeSubsection).toLowerCase() !== 'mis-tutorias') return;
+    let cancelled = false;
+    const load = async () => {
+      setLoadingMisTutorias(true);
+      try {
+        const uid = user && (user._id || user.id);
+        if (!uid) {
+          setMisTutorias([]);
+          setLoadingMisTutorias(false);
+          return;
+        }
+        let res = await fetchApi(`/api/tutorias?estudiante=${encodeURIComponent(uid)}&estado=confirmada`);
+        if (!res.ok) {
+          // fallback a endpoint sin filtro de estado
+          res = await fetchApi(`/api/tutorias?estudiante=${encodeURIComponent(uid)}`);
+        }
+        if (!res.ok) throw new Error('No se pudieron cargar las tutorías');
+        let data = await res.json();
+        // filtrar confirmadas en cliente si el backend no lo hizo
+        if (Array.isArray(data)) {
+          data = data.filter(t => {
+            const estado = (t.estado || t.status || '').toString().toLowerCase();
+            return estado === 'confirmada' || estado === 'confirmed' || estado === 'confirmado';
+          });
+        }
+        if (!cancelled) setMisTutorias(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error('Error cargando mis tutorías', err);
+        if (!cancelled) setMisTutorias([]);
+      } finally {
+        if (!cancelled) setLoadingMisTutorias(false);
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [activeSubsection, user]);
+
+  const parsedMisTutorias = useMemo(() => {
+    return (misTutorias || []).map((s) => {
+      const start = s.fechaInicio ? new Date(s.fechaInicio) : s.datetime ? new Date(s.datetime) : null;
+      const end = s.fechaFin ? new Date(s.fechaFin) : (s.fechaInicio ? new Date(new Date(s.fechaInicio).getTime() + 30*60000) : null);
+      const titulo = s.tema || s.title || s.descripcion || personLabel(s.profesor) || 'Tutoría';
+      const lugar = s.lugar || s.location || '';
+      return { ...s, startDate: start, endDate: end, title: titulo, place: lugar };
+    }).filter(s => s.startDate).sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+  }, [misTutorias]);
+
+  // -----------------------
+  // fin Mis Tutorías
+  // -----------------------
+
+  // -----------------------
+  // Solicitudes pendientes
+  // -----------------------
+  const [solicitudesPendientes, setSolicitudesPendientes] = useState([]);
+  const [loadingSolicitudes, setLoadingSolicitudes] = useState(false);
+  const [processingAction, setProcessingAction] = useState(null);
+
+  useEffect(() => {
+    if (!activeSubsection || String(activeSubsection).toLowerCase() !== 'profesores') return;
+    let cancelled = false;
+    const load = async () => {
+      setLoadingSolicitudes(true);
+      try {
+        const uid = user && (user._id || user.id);
+        if (!uid) {
+          setSolicitudesPendientes([]);
+          setLoadingSolicitudes(false);
+          return;
+        }
+        let res = await fetchApi(`/api/tutorias?estudiante=${encodeURIComponent(uid)}&estado=pendiente`);
+        if (!res.ok) {
+          // fallback a endpoint sin filtro de estado
+          res = await fetchApi(`/api/tutorias?estudiante=${encodeURIComponent(uid)}`);
+        }
+        if (!res.ok) throw new Error('No se pudieron cargar las solicitudes');
+        let data = await res.json();
+        // filtrar pendientes en cliente si el backend no lo hizo
+        if (Array.isArray(data)) {
+          data = data.filter(t => {
+            const estado = (t.estado || t.status || '').toString().toLowerCase();
+            return estado === 'pendiente' || estado === 'pending';
+          });
+        }
+        if (!cancelled) setSolicitudesPendientes(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error('Error cargando solicitudes pendientes', err);
+        if (!cancelled) setSolicitudesPendientes([]);
+      } finally {
+        if (!cancelled) setLoadingSolicitudes(false);
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [activeSubsection, user]);
+
+  const parsedSolicitudes = useMemo(() => {
+    return (solicitudesPendientes || []).map((s) => {
+      const start = s.fechaInicio ? new Date(s.fechaInicio) : s.datetime ? new Date(s.datetime) : null;
+      const end = s.fechaFin ? new Date(s.fechaFin) : (s.fechaInicio ? new Date(new Date(s.fechaInicio).getTime() + 30*60000) : null);
+      const titulo = s.tema || s.title || s.descripcion || personLabel(s.profesor) || 'Tutoría';
+      const lugar = s.lugar || s.location || '';
+      return { ...s, startDate: start, endDate: end, title: titulo, place: lugar };
+    }).filter(s => s.startDate).sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+  }, [solicitudesPendientes]);
+
+  const handleCancelarSolicitud = async (tutoriaId) => {
+    if (!confirm('¿Estás seguro de que deseas cancelar esta solicitud?')) return;
+    
+    setProcessingAction(tutoriaId);
+    try {
+      const res = await fetchApi(`/api/tutorias/${encodeURIComponent(tutoriaId)}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error || body?.message || 'No se pudo cancelar la solicitud');
+      }
+      // Recargar solicitudes
+      setSolicitudesPendientes(prev => prev.filter(s => (s._id || s.id) !== tutoriaId));
+      alert('Solicitud cancelada correctamente');
+    } catch (err) {
+      console.error('Error cancelando solicitud', err);
+      alert('No se pudo cancelar la solicitud: ' + (err.message || 'error'));
+    } finally {
+      setProcessingAction(null);
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg p-4 sm:p-6 lg:p-8 shadow-sm">
+      {/* Vista SOLICITUDES PENDIENTES */}
+      {activeSubsection === 'profesores' ? (
+        <div>
+          <div className="mb-6">
+            <h3 className="text-xl font-semibold text-gray-800">Solicitudes Pendientes</h3>
+            <p className="text-sm text-gray-500 mt-1">Tutorías en espera de confirmación del profesor</p>
+          </div>
+
+          {loadingSolicitudes ? (
+            <div className="text-center py-8 text-gray-500">Cargando solicitudes...</div>
+          ) : parsedSolicitudes.length === 0 ? (
+            <div className="text-center py-12 bg-gray-50 rounded-lg">
+              <div className="text-gray-400 mb-2">⏳</div>
+              <div className="text-sm text-gray-500">No tienes solicitudes pendientes en este momento</div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {parsedSolicitudes.map((tutoria) => {
+                const start = new Date(tutoria.startDate);
+                const end = tutoria.endDate ? new Date(tutoria.endDate) : null;
+                const isPast = start < new Date();
+                
+                return (
+                  <div
+                    key={tutoria._id || tutoria.id || `${tutoria.startDate}-${tutoria.title}`}
+                    className={`bg-white border-l-4 border-yellow-500 rounded-lg shadow-sm hover:shadow-md transition-shadow ${isPast ? 'opacity-75' : ''}`}
+                  >
+                    <div className="p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-semibold rounded">
+                              PENDIENTE
+                            </span>
+                            {isPast && (
+                              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                                Fecha pasada
+                              </span>
+                            )}
+                          </div>
+                          <h4 className="font-semibold text-gray-800 text-lg leading-tight mb-1">
+                            {tutoria.title || 'Tutoría'}
+                          </h4>
+                          <div className="text-sm text-gray-500">
+                            Profesor: {tutoria.profesor ? personLabel(tutoria.profesor) : 'Sin asignar'}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => openSession(tutoria)}
+                          className="text-violet-600 hover:text-violet-700 p-2"
+                          title="Ver detalles"
+                        >
+                          <span className="text-xl">ℹ️</span>
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm mb-4">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-gray-600">
+                            <span className="text-violet-600">📅</span>
+                            <span>{start.toLocaleDateString('es-ES', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-gray-600">
+                            <span className="text-violet-600">🕐</span>
+                            <span>
+                              {start.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                              {end ? ` - ${end.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}` : ''}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          {tutoria.modalidad && (
+                            <div className="flex items-center gap-2 text-gray-600">
+                              <span className="text-violet-600">{tutoria.modalidad === 'online' ? '💻' : '🏫'}</span>
+                              <span className="capitalize">{tutoria.modalidad}</span>
+                            </div>
+                          )}
+                          {tutoria.lugar && (
+                            <div className="flex items-center gap-2 text-gray-600">
+                              <span className="text-violet-600">📍</span>
+                              <span className="truncate">{tutoria.lugar}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {tutoria.descripcion && (
+                        <div className="mb-4 p-3 bg-gray-50 rounded text-sm">
+                          <div className="text-xs text-gray-500 mb-1">Descripción:</div>
+                          <div className="text-gray-700">{tutoria.descripcion}</div>
+                        </div>
+                      )}
+
+                      <div className="flex gap-2 pt-3 border-t border-gray-100">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openSession(tutoria);
+                          }}
+                          className="flex-1 px-4 py-2 bg-violet-50 text-violet-600 hover:bg-violet-100 rounded-md font-medium text-sm transition-colors"
+                        >
+                          Ver detalles
+                        </button>
+                        <button
+                          onClick={() => handleCancelarSolicitud(tutoria._id || tutoria.id)}
+                          disabled={processingAction === (tutoria._id || tutoria.id)}
+                          className="flex-1 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-md font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {processingAction === (tutoria._id || tutoria.id) ? 'Cancelando...' : 'Cancelar solicitud'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      ) : null}
+
+      {/* Vista MIS TUTORIAS para alumno */}
+      {activeSubsection === 'mis-tutorias' ? (
+        <div>
+          <div className="mb-6">
+            <h3 className="text-xl font-semibold text-gray-800">Mis Tutorías Confirmadas</h3>
+            <p className="text-sm text-gray-500 mt-1">Todas tus tutorías confirmadas y próximas</p>
+          </div>
+
+          {loadingMisTutorias ? (
+            <div className="text-center py-8 text-gray-500">Cargando tutorías...</div>
+          ) : parsedMisTutorias.length === 0 ? (
+            <div className="text-center py-12 bg-gray-50 rounded-lg">
+              <div className="text-gray-400 mb-2">📅</div>
+              <div className="text-sm text-gray-500">No tienes tutorías confirmadas en este momento</div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {parsedMisTutorias.map((tutoria) => {
+                const start = new Date(tutoria.startDate);
+                const end = tutoria.endDate ? new Date(tutoria.endDate) : null;
+                const isPast = start < new Date();
+                
+                return (
+                  <div
+                    key={tutoria._id || tutoria.id || `${tutoria.startDate}-${tutoria.title}`}
+                    className={`bg-white border rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer overflow-hidden ${isPast ? 'opacity-75' : ''}`}
+                    onClick={() => openSession(tutoria)}
+                  >
+                    <div className="h-2 bg-gradient-to-r from-green-600 to-green-400" />
+                    <div className="p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-gray-800 text-lg leading-tight mb-1">
+                            {tutoria.title || 'Tutoría'}
+                          </h4>
+                          <div className="text-sm text-gray-500">
+                            {tutoria.profesor ? personLabel(tutoria.profesor) : 'Profesor'}
+                          </div>
+                        </div>
+                        {isPast && (
+                          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                            Pasada
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <span className="text-violet-600">📅</span>
+                          <span>{start.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <span className="text-violet-600">🕐</span>
+                          <span>
+                            {start.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                            {end ? ` - ${end.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}` : ''}
+                          </span>
+                        </div>
+                        {tutoria.modalidad && (
+                          <div className="flex items-center gap-2 text-gray-600">
+                            <span className="text-violet-600">{tutoria.modalidad === 'online' ? '💻' : '🏫'}</span>
+                            <span className="capitalize">{tutoria.modalidad}</span>
+                          </div>
+                        )}
+                        {tutoria.lugar && (
+                          <div className="flex items-center gap-2 text-gray-600">
+                            <span className="text-violet-600">📍</span>
+                            <span className="truncate">{tutoria.lugar}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="mt-4 pt-3 border-t border-gray-100">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openSession(tutoria);
+                          }}
+                          className="w-full text-center text-sm text-violet-600 hover:text-violet-700 font-medium"
+                        >
+                          Ver detalles →
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      ) : null}
+
       {/* Vista HISTORIAL para alumno */}
       {activeSubsection === 'historial' ? (
         <div>
@@ -438,21 +786,107 @@ function TutoriasAlumno({ menu, activeSubsection, user }) {
                 <div className="flex items-start justify-between p-4 border-b">
                   <div>
                     <h3 className="text-lg font-semibold">{selectedSession.title || selectedSession.tema || 'Tutoría'}</h3>
-                    <div className="text-xs text-gray-500">{selectedSession.profesor ? personLabel(selectedSession.profesor) : ''}</div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      Profesor: {selectedSession.profesor ? personLabel(selectedSession.profesor) : 'Sin asignar'}
+                    </div>
+                    {selectedSession.estado && (
+                      <div className="mt-2">
+                        <span className={`px-2 py-1 text-xs font-semibold rounded ${
+                          (selectedSession.estado || '').toLowerCase() === 'confirmada' || (selectedSession.estado || '').toLowerCase() === 'confirmed'
+                            ? 'bg-green-100 text-green-700'
+                            : (selectedSession.estado || '').toLowerCase() === 'pendiente' || (selectedSession.estado || '').toLowerCase() === 'pending'
+                            ? 'bg-yellow-100 text-yellow-700'
+                            : 'bg-gray-100 text-gray-700'
+                        }`}>
+                          {selectedSession.estado}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                  <button onClick={closeSession} className="text-gray-500 hover:text-gray-700 ml-4">Cerrar ✕</button>
+                  <button onClick={closeSession} className="text-gray-500 hover:text-gray-700 ml-4 text-xl">✕</button>
                 </div>
-                <div className="p-4 space-y-3">
-                  <div className="text-sm text-gray-700"><strong>Hora:</strong> {(new Date(selectedSession.startDate)).toLocaleString()} {selectedSession.endDate ? ` - ${(new Date(selectedSession.endDate)).toLocaleString()}` : ''}</div>
+                <div className="p-4 space-y-4">
+                  <div>
+                    <div className="text-xs text-gray-500 font-semibold mb-1">Fecha y hora</div>
+                    <div className="text-sm text-gray-700">
+                      📅 {selectedSession.startDate ? new Date(selectedSession.startDate).toLocaleDateString('es-ES', { 
+                        weekday: 'long', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                      }) : 'No especificada'}
+                    </div>
+                    <div className="text-sm text-gray-700 mt-1">
+                      🕐 {selectedSession.startDate ? new Date(selectedSession.startDate).toLocaleTimeString('es-ES', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      }) : ''}
+                      {selectedSession.endDate ? ` - ${new Date(selectedSession.endDate).toLocaleTimeString('es-ES', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })}` : ''}
+                    </div>
+                  </div>
+
                   {selectedSession.descripcion && (
                     <div>
-                      <div className="text-xs text-gray-500">Descripción</div>
-                      <div className="text-sm">{selectedSession.descripcion}</div>
+                      <div className="text-xs text-gray-500 font-semibold mb-1">Descripción</div>
+                      <div className="text-sm text-gray-700 p-3 bg-gray-50 rounded">
+                        {selectedSession.descripcion}
+                      </div>
                     </div>
                   )}
-                  {selectedSession.modalidad && <div className="text-sm"><strong>Modalidad:</strong> {selectedSession.modalidad}</div>}
-                  {selectedSession.lugar && <div className="text-sm"><strong>Lugar:</strong> {selectedSession.lugar}</div>}
-                  {selectedSession.estado && <div className="text-sm"><strong>Estado:</strong> {selectedSession.estado}</div>}
+
+                  <div className="grid grid-cols-2 gap-4">
+                    {selectedSession.modalidad && (
+                      <div>
+                        <div className="text-xs text-gray-500 font-semibold mb-1">Modalidad</div>
+                        <div className="text-sm text-gray-700 flex items-center gap-2">
+                          <span>{selectedSession.modalidad === 'online' ? '💻' : '🏫'}</span>
+                          <span className="capitalize">{selectedSession.modalidad}</span>
+                        </div>
+                      </div>
+                    )}
+                    {selectedSession.lugar && (
+                      <div>
+                        <div className="text-xs text-gray-500 font-semibold mb-1">Lugar</div>
+                        <div className="text-sm text-gray-700 flex items-center gap-2">
+                          <span>📍</span>
+                          <span>{selectedSession.lugar}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {selectedSession.estudiante && (
+                    <div>
+                      <div className="text-xs text-gray-500 font-semibold mb-1">Estudiante</div>
+                      <div className="text-sm text-gray-700">
+                        {personLabel(selectedSession.estudiante)}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-4 border-t bg-gray-50 flex gap-2">
+                  <button
+                    onClick={closeSession}
+                    className="flex-1 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 font-medium transition-colors"
+                  >
+                    Cerrar
+                  </button>
+                  {((selectedSession.estado || '').toLowerCase() === 'pendiente' || (selectedSession.estado || '').toLowerCase() === 'pending') && (
+                    <button
+                      onClick={() => {
+                        closeSession();
+                        handleCancelarSolicitud(selectedSession._id || selectedSession.id);
+                      }}
+                      disabled={processingAction === (selectedSession._id || selectedSession.id)}
+                      className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {processingAction === (selectedSession._id || selectedSession.id) ? 'Cancelando...' : 'Cancelar tutoría'}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -556,6 +990,120 @@ function TutoriasAlumno({ menu, activeSubsection, user }) {
                   {saving ? 'Reservando...' : 'Confirmar reserva'}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal detalle - disponible en todas las secciones */}
+      {selectedSession && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/20" onClick={closeSession} />
+          <div className="relative z-10 w-full max-w-lg mx-4 bg-white rounded-lg shadow-xl overflow-auto max-h-[80vh]">
+            <div className="flex items-start justify-between p-4 border-b">
+              <div>
+                <h3 className="text-lg font-semibold">{selectedSession.title || selectedSession.tema || 'Tutoría'}</h3>
+                <div className="text-xs text-gray-500 mt-1">
+                  Profesor: {selectedSession.profesor ? personLabel(selectedSession.profesor) : 'Sin asignar'}
+                </div>
+                {selectedSession.estado && (
+                  <div className="mt-2">
+                    <span className={`px-2 py-1 text-xs font-semibold rounded ${
+                      (selectedSession.estado || '').toLowerCase() === 'confirmada' || (selectedSession.estado || '').toLowerCase() === 'confirmed'
+                        ? 'bg-green-100 text-green-700'
+                        : (selectedSession.estado || '').toLowerCase() === 'pendiente' || (selectedSession.estado || '').toLowerCase() === 'pending'
+                        ? 'bg-yellow-100 text-yellow-700'
+                        : 'bg-gray-100 text-gray-700'
+                    }`}>
+                      {selectedSession.estado}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <button onClick={closeSession} className="text-gray-500 hover:text-gray-700 ml-4 text-xl">✕</button>
+            </div>
+            <div className="p-4 space-y-4">
+              <div>
+                <div className="text-xs text-gray-500 font-semibold mb-1">Fecha y hora</div>
+                <div className="text-sm text-gray-700">
+                  📅 {selectedSession.startDate ? new Date(selectedSession.startDate).toLocaleDateString('es-ES', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  }) : 'No especificada'}
+                </div>
+                <div className="text-sm text-gray-700 mt-1">
+                  🕐 {selectedSession.startDate ? new Date(selectedSession.startDate).toLocaleTimeString('es-ES', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  }) : ''}
+                  {selectedSession.endDate ? ` - ${new Date(selectedSession.endDate).toLocaleTimeString('es-ES', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  })}` : ''}
+                </div>
+              </div>
+
+              {selectedSession.descripcion && (
+                <div>
+                  <div className="text-xs text-gray-500 font-semibold mb-1">Descripción</div>
+                  <div className="text-sm text-gray-700 p-3 bg-gray-50 rounded">
+                    {selectedSession.descripcion}
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                {selectedSession.modalidad && (
+                  <div>
+                    <div className="text-xs text-gray-500 font-semibold mb-1">Modalidad</div>
+                    <div className="text-sm text-gray-700 flex items-center gap-2">
+                      <span>{selectedSession.modalidad === 'online' ? '💻' : '🏫'}</span>
+                      <span className="capitalize">{selectedSession.modalidad}</span>
+                    </div>
+                  </div>
+                )}
+                {selectedSession.lugar && (
+                  <div>
+                    <div className="text-xs text-gray-500 font-semibold mb-1">Lugar</div>
+                    <div className="text-sm text-gray-700 flex items-center gap-2">
+                      <span>📍</span>
+                      <span>{selectedSession.lugar}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {selectedSession.estudiante && (
+                <div>
+                  <div className="text-xs text-gray-500 font-semibold mb-1">Estudiante</div>
+                  <div className="text-sm text-gray-700">
+                    {personLabel(selectedSession.estudiante)}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="p-4 border-t bg-gray-50 flex gap-2">
+              <button
+                onClick={closeSession}
+                className="flex-1 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 font-medium transition-colors"
+              >
+                Cerrar
+              </button>
+              {((selectedSession.estado || '').toLowerCase() === 'pendiente' || (selectedSession.estado || '').toLowerCase() === 'pending') && (
+                <button
+                  onClick={() => {
+                    closeSession();
+                    handleCancelarSolicitud(selectedSession._id || selectedSession.id);
+                  }}
+                  disabled={processingAction === (selectedSession._id || selectedSession.id)}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {processingAction === (selectedSession._id || selectedSession.id) ? 'Cancelando...' : 'Cancelar tutoría'}
+                </button>
+              )}
             </div>
           </div>
         </div>
