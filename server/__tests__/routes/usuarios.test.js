@@ -233,21 +233,6 @@ describe('Usuarios Routes', () => {
       expect(response.body.password).toBeUndefined();
     });
 
-    // it('debería actualizar el rol del usuario', async () => {
-    //   const user = await User.create({
-    //     name: 'User',
-    //     email: 'user@ull.edu.es',
-    //     password: 'password',
-    //     rol: 'estudiante'
-    //   });
-
-    //   const response = await request(app)
-    //     .put(`/api/usuarios/${user._id}`)
-    //     .send({ rol: 'profesor' })
-    //     .expect(200);
-
-    //   expect(response.body.rol).toBe('profesor');
-    // });
 
     it('debería actualizar estado activo del usuario', async () => {
       const user = await User.create({
