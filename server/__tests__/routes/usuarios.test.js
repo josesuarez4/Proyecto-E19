@@ -233,8 +233,6 @@ describe('Usuarios Routes', () => {
       expect(response.body.password).toBeUndefined();
     });
 
-
-
     it('debería actualizar estado activo del usuario', async () => {
       const user = await User.create({
         name: 'User',
