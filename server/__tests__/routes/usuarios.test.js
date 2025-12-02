@@ -234,6 +234,7 @@ describe('Usuarios Routes', () => {
     });
 
 
+
     it('debería actualizar estado activo del usuario', async () => {
       const user = await User.create({
         name: 'User',
