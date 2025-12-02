@@ -2,7 +2,8 @@ name: Build
 on:
   push:
     branches:
-      - [ "main", "feature/jose" ]
+      - main
+      - feature/jose
   pull_request:
     types: [opened, synchronize, reopened]
 jobs:
